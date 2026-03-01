@@ -1,0 +1,5 @@
+class MyClass:
+    x = 5  # class attribute
+
+p1 = MyClass()
+print(p1.x)  # Output: 5

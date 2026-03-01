@@ -1,0 +1,5 @@
+def show_kids(*kids):
+    # kids becomes a tuple of all arguments
+    print("The youngest kid is:", kids[2])
+
+show_kids("Emil", "Tobias", "Linus")  # Output: The youngest kid is: Linus

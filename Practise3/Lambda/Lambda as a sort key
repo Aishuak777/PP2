@@ -1,0 +1,4 @@
+points = [(1, 5), (3, 2), (2, 9)]
+# Sort by the second value in each tuple
+points.sort(key=lambda x: x[1])
+print(points)  # Output: [(3, 2), (1, 5), (2, 9)]

@@ -1,0 +1,6 @@
+def my_multiplier(n):
+    # Returns a lambda that multiplies by n
+    return lambda a: a * n
+
+double = my_multiplier(2)
+print(double(11))  # Output: 22

@@ -1,0 +1,12 @@
+class Animal:
+    def sound(self):
+        print("Some generic sound")
+
+class Dog(Animal):
+    def sound(self):
+        print("Woof!")  # Overrides parent method
+
+a = Animal()
+d = Dog()
+a.sound()  # Output: Some generic sound
+d.sound()  # Output: Woof!
