@@ -1,0 +1,5 @@
+import re
+
+s = input()
+p = re.compile(r"\b\w+\b")
+print(len(p.findall(s)))

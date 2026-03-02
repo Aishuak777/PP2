@@ -1,0 +1,8 @@
+import re
+
+s = input()
+pat = input()
+
+
+matches = re.findall(re.escape(pat), s)
+print(len(matches))

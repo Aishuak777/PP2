@@ -1,0 +1,6 @@
+import re
+
+s = input()
+pat = input()
+
+print(",".join(re.split(pat, s)))
