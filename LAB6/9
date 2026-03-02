@@ -1,0 +1,7 @@
+n = int(input().strip())
+keys = input().split()
+values = input().split()
+query = input().strip()
+
+d = dict(zip(keys, values))
+print(d.get(query, "Not found"))

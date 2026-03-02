@@ -1,0 +1,4 @@
+n = int(input().strip())
+words = input().split()
+
+print(" ".join(f"{i}:{w}" for i, w in enumerate(words)))

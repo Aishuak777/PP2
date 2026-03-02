@@ -1,0 +1,4 @@
+n = int(input().strip())
+nums = list(map(int, input().split()))
+
+print(sum(map(bool, nums)))

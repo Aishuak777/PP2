@@ -1,0 +1,5 @@
+n = int(input().strip())
+nums = list(map(int, input().split()))
+
+evens = filter(lambda x: x % 2 == 0, nums)
+print(len(list(evens)))

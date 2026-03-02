@@ -1,0 +1,5 @@
+n = int(input().strip())
+nums = list(map(int, input().split()))
+
+unique_sorted = sorted(set(nums))
+print(" ".join(map(str, unique_sorted)))

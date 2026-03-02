@@ -1,0 +1,4 @@
+s = input().strip()
+vowels = set("aeiouAEIOU")
+
+print("Yes" if any(ch in vowels for ch in s) else "No")
