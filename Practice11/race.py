@@ -2,172 +2,84 @@ import pygame
 import random
 import sys
 
+# ---------------------------------
 # Initialize pygame
+# ---------------------------------
 pygame.init()
 
-# -----------------------------
-# Game settings
-# -----------------------------
+# ---------------------------------
+# Game window settings
+# ---------------------------------
 WIDTH = 400
 HEIGHT = 600
 FPS = 60
 
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Racer with Coins")
+clock = pygame.time.Clock()
+
+# ---------------------------------
 # Colors
+# ---------------------------------
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-GRAY = (80, 80, 80)
+GRAY = (70, 70, 70)
+GREEN = (20, 120, 20)
+BLUE = (50, 120, 255)
+RED = (220, 50, 50)
 YELLOW = (255, 215, 0)
-RED = (220, 20, 60)
-BLUE = (30, 144, 255)
-GREEN = (34, 177, 76)
-ROAD_LINE_COLOR = (240, 240, 240)
-GRASS = (30, 120, 30)
+ORANGE = (255, 140, 0)
+PURPLE = (170, 80, 255)
+LIGHT_GRAY = (220, 220, 220)
 
+# ---------------------------------
 # Road settings
+# ---------------------------------
 ROAD_LEFT = 80
 ROAD_RIGHT = WIDTH - 80
 ROAD_WIDTH = ROAD_RIGHT - ROAD_LEFT
 LANES = 3
 LANE_WIDTH = ROAD_WIDTH // LANES
 
-# Setup display
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Racer")
-clock = pygame.time.Clock()
-
+# ---------------------------------
 # Fonts
+# ---------------------------------
 font_small = pygame.font.SysFont("Arial", 24)
 font_big = pygame.font.SysFont("Arial", 42)
 
-# -----------------------------
+# ---------------------------------
+# Game tuning
+# ---------------------------------
+# Speed level increases every 2 collected coins
+COINS_NEEDED_FOR_SPEED_UP = 2
+
+# Initial enemy speed
+enemy_base_speed = 5
+
+# Road animation
+road_line_speed = 6
+road_line_offset = 0
+
+# ---------------------------------
 # Helper functions
-# -----------------------------
+# ---------------------------------
 def lane_center(lane_index):
-    """Return x-coordinate of the center of a lane."""
+    """Return x-coordinate of the center of the selected lane."""
     return ROAD_LEFT + lane_index * LANE_WIDTH + LANE_WIDTH // 2
+
 
 def draw_text(surface, text, font, color, x, y):
     """Draw text on the screen."""
-    text_obj = font.render(text, True, color)
-    surface.blit(text_obj, (x, y))
+    text_surface = font.render(text, True, color)
+    surface.blit(text_surface, (x, y))
 
-# -----------------------------
-# Player class
-# -----------------------------
-class Player(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-
-        # Create player's car as a simple rectangle surface
-        self.image = pygame.Surface((40, 70), pygame.SRCALPHA)
-        self.image.fill((0, 0, 0, 0))
-
-        # Draw body of the car
-        pygame.draw.rect(self.image, BLUE, (5, 10, 30, 50), border_radius=8)
-        pygame.draw.rect(self.image, BLACK, (10, 0, 20, 15), border_radius=5)
-
-        # Wheels
-        pygame.draw.rect(self.image, BLACK, (0, 15, 5, 12), border_radius=2)
-        pygame.draw.rect(self.image, BLACK, (35, 15, 5, 12), border_radius=2)
-        pygame.draw.rect(self.image, BLACK, (0, 45, 5, 12), border_radius=2)
-        pygame.draw.rect(self.image, BLACK, (35, 45, 5, 12), border_radius=2)
-
-        self.rect = self.image.get_rect()
-        self.rect.centerx = lane_center(1)  # Start in middle lane
-        self.rect.bottom = HEIGHT - 20
-        self.speed = 6
-
-    def update(self):
-        keys = pygame.key.get_pressed()
-
-        # Move left
-        if keys[pygame.K_LEFT]:
-            self.rect.x -= self.speed
-
-        # Move right
-        if keys[pygame.K_RIGHT]:
-            self.rect.x += self.speed
-
-        # Prevent player from leaving the road
-        if self.rect.left < ROAD_LEFT + 5:
-            self.rect.left = ROAD_LEFT + 5
-        if self.rect.right > ROAD_RIGHT - 5:
-            self.rect.right = ROAD_RIGHT - 5
-
-# -----------------------------
-# Enemy class
-# -----------------------------
-class Enemy(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-
-        # Create enemy car surface
-        self.image = pygame.Surface((40, 70), pygame.SRCALPHA)
-        self.image.fill((0, 0, 0, 0))
-
-        # Draw enemy car
-        pygame.draw.rect(self.image, RED, (5, 10, 30, 50), border_radius=8)
-        pygame.draw.rect(self.image, BLACK, (10, 0, 20, 15), border_radius=5)
-
-        # Wheels
-        pygame.draw.rect(self.image, BLACK, (0, 15, 5, 12), border_radius=2)
-        pygame.draw.rect(self.image, BLACK, (35, 15, 5, 12), border_radius=2)
-        pygame.draw.rect(self.image, BLACK, (0, 45, 5, 12), border_radius=2)
-        pygame.draw.rect(self.image, BLACK, (35, 45, 5, 12), border_radius=2)
-
-        self.rect = self.image.get_rect()
-        self.rect.centerx = lane_center(random.randint(0, 2))
-        self.rect.y = -80
-        self.speed = random.randint(5, 8)
-
-    def update(self):
-        # Move enemy downward
-        self.rect.y += self.speed
-
-        # Delete enemy when it leaves the screen
-        if self.rect.top > HEIGHT:
-            self.kill()
-
-# -----------------------------
-# Coin class
-# -----------------------------
-class Coin(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-
-        # Create coin surface
-        self.image = pygame.Surface((22, 22), pygame.SRCALPHA)
-        self.image.fill((0, 0, 0, 0))
-
-        # Draw a yellow coin
-        pygame.draw.circle(self.image, YELLOW, (11, 11), 10)
-        pygame.draw.circle(self.image, BLACK, (11, 11), 10, 2)
-
-        self.rect = self.image.get_rect()
-        self.rect.centerx = lane_center(random.randint(0, 2))
-        self.rect.y = -30
-        self.speed = 5
-
-    def update(self):
-        # Move coin downward
-        self.rect.y += self.speed
-
-        # Delete coin when it leaves the screen
-        if self.rect.top > HEIGHT:
-            self.kill()
-
-# -----------------------------
-# Road line animation
-# -----------------------------
-line_y = 0
-line_speed = 6
 
 def draw_road():
-    """Draw the road, grass, and moving lane lines."""
-    global line_y
+    """Draw grass, road, borders, and moving dashed lane lines."""
+    global road_line_offset
 
-    # Grass
-    screen.fill(GRASS)
+    # Grass background
+    screen.fill(GREEN)
 
     # Road
     pygame.draw.rect(screen, GRAY, (ROAD_LEFT, 0, ROAD_WIDTH, HEIGHT))
@@ -176,20 +88,157 @@ def draw_road():
     pygame.draw.line(screen, WHITE, (ROAD_LEFT, 0), (ROAD_LEFT, HEIGHT), 4)
     pygame.draw.line(screen, WHITE, (ROAD_RIGHT, 0), (ROAD_RIGHT, HEIGHT), 4)
 
-    # Lane divider lines
+    # Dashed lane lines
     for lane in range(1, LANES):
         x = ROAD_LEFT + lane * LANE_WIDTH
         for y in range(-40, HEIGHT, 60):
-            pygame.draw.rect(screen, ROAD_LINE_COLOR, (x - 3, y + line_y, 6, 30))
+            pygame.draw.rect(screen, LIGHT_GRAY, (x - 3, y + road_line_offset, 6, 30))
 
-    # Animate lane lines
-    line_y += line_speed
-    if line_y >= 60:
-        line_y = 0
+    # Move dashed lines down
+    road_line_offset += road_line_speed
+    if road_line_offset >= 60:
+        road_line_offset = 0
 
-# -----------------------------
-# Sprite groups
-# -----------------------------
+
+# ---------------------------------
+# Player class
+# ---------------------------------
+class Player(pygame.sprite.Sprite):
+    """Player car controlled by arrow keys."""
+
+    def __init__(self):
+        super().__init__()
+
+        # Transparent surface for the player's car
+        self.image = pygame.Surface((40, 70), pygame.SRCALPHA)
+
+        # Car body
+        pygame.draw.rect(self.image, BLUE, (5, 10, 30, 50), border_radius=8)
+        pygame.draw.rect(self.image, BLACK, (10, 0, 20, 15), border_radius=4)
+
+        # Wheels
+        pygame.draw.rect(self.image, BLACK, (0, 15, 5, 12), border_radius=2)
+        pygame.draw.rect(self.image, BLACK, (35, 15, 5, 12), border_radius=2)
+        pygame.draw.rect(self.image, BLACK, (0, 45, 5, 12), border_radius=2)
+        pygame.draw.rect(self.image, BLACK, (35, 45, 5, 12), border_radius=2)
+
+        # Starting position
+        self.rect = self.image.get_rect()
+        self.rect.centerx = lane_center(1)
+        self.rect.bottom = HEIGHT - 20
+
+        self.speed = 6
+
+    def update(self):
+        """Move player left or right and keep it inside the road."""
+        keys = pygame.key.get_pressed()
+
+        if keys[pygame.K_LEFT]:
+            self.rect.x -= self.speed
+        if keys[pygame.K_RIGHT]:
+            self.rect.x += self.speed
+
+        # Prevent leaving the road
+        if self.rect.left < ROAD_LEFT + 5:
+            self.rect.left = ROAD_LEFT + 5
+        if self.rect.right > ROAD_RIGHT - 5:
+            self.rect.right = ROAD_RIGHT - 5
+
+
+# ---------------------------------
+# Enemy class
+# ---------------------------------
+class Enemy(pygame.sprite.Sprite):
+    """Enemy cars moving down the road."""
+
+    def __init__(self, speed):
+        super().__init__()
+
+        # Transparent surface for enemy car
+        self.image = pygame.Surface((40, 70), pygame.SRCALPHA)
+
+        # Car body
+        pygame.draw.rect(self.image, RED, (5, 10, 30, 50), border_radius=8)
+        pygame.draw.rect(self.image, BLACK, (10, 0, 20, 15), border_radius=4)
+
+        # Wheels
+        pygame.draw.rect(self.image, BLACK, (0, 15, 5, 12), border_radius=2)
+        pygame.draw.rect(self.image, BLACK, (35, 15, 5, 12), border_radius=2)
+        pygame.draw.rect(self.image, BLACK, (0, 45, 5, 12), border_radius=2)
+        pygame.draw.rect(self.image, BLACK, (35, 45, 5, 12), border_radius=2)
+
+        # Random lane position
+        self.rect = self.image.get_rect()
+        self.rect.centerx = lane_center(random.randint(0, 2))
+        self.rect.y = -80
+
+        # Enemy speed depends on current difficulty
+        self.speed = speed + random.randint(0, 2)
+
+    def update(self):
+        """Move enemy downward and delete after leaving screen."""
+        self.rect.y += self.speed
+
+        if self.rect.top > HEIGHT:
+            self.kill()
+
+
+# ---------------------------------
+# Coin class
+# ---------------------------------
+class Coin(pygame.sprite.Sprite):
+    """Coin with different value/weight."""
+
+    def __init__(self):
+        super().__init__()
+
+        # Different coin types
+        coin_types = [
+            {"value": 1, "color": YELLOW, "radius": 10},
+            {"value": 2, "color": ORANGE, "radius": 11},
+            {"value": 5, "color": PURPLE, "radius": 12},
+        ]
+
+        # Spawn probabilities
+        probabilities = [0.6, 0.3, 0.1]
+
+        chosen = random.choices(coin_types, weights=probabilities, k=1)[0]
+
+        self.value = chosen["value"]
+        self.color = chosen["color"]
+        self.radius = chosen["radius"]
+
+        # Transparent surface for coin
+        size = self.radius * 2 + 6
+        self.image = pygame.Surface((size, size), pygame.SRCALPHA)
+
+        # Draw coin
+        pygame.draw.circle(self.image, self.color, (size // 2, size // 2), self.radius)
+        pygame.draw.circle(self.image, BLACK, (size // 2, size // 2), self.radius, 2)
+
+        # Coin value text
+        value_text = font_small.render(str(self.value), True, BLACK)
+        value_rect = value_text.get_rect(center=(size // 2, size // 2))
+        self.image.blit(value_text, value_rect)
+
+        # Random lane position
+        self.rect = self.image.get_rect()
+        self.rect.centerx = lane_center(random.randint(0, 2))
+        self.rect.y = -40
+
+        self.speed = 5
+
+    def update(self):
+        """Move coin downward and delete after leaving screen."""
+        self.rect.y += self.speed
+
+        if self.rect.top > HEIGHT:
+            self.kill()
+
+
+# ---------------------------------
+# Create sprite groups
+# ---------------------------------
 all_sprites = pygame.sprite.Group()
 enemies = pygame.sprite.Group()
 coins = pygame.sprite.Group()
@@ -197,49 +246,51 @@ coins = pygame.sprite.Group()
 player = Player()
 all_sprites.add(player)
 
-# -----------------------------
+# ---------------------------------
 # Timed events
-# -----------------------------
+# ---------------------------------
 ADD_ENEMY = pygame.USEREVENT + 1
-pygame.time.set_timer(ADD_ENEMY, 1200)
-
 ADD_COIN = pygame.USEREVENT + 2
+
+pygame.time.set_timer(ADD_ENEMY, 1200)
 pygame.time.set_timer(ADD_COIN, 1500)
 
-# -----------------------------
-# Score variables
-# -----------------------------
+# ---------------------------------
+# Game variables
+# ---------------------------------
 score = 0
 coin_count = 0
+coin_weight_sum = 0
 game_over = False
+speed_level = 0
 
-# -----------------------------
-# Main game loop
-# -----------------------------
+# ---------------------------------
+# Main loop
+# ---------------------------------
 while True:
     clock.tick(FPS)
 
+    # Handle events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
 
-        # Spawn enemies regularly
+        # Add enemy
         if event.type == ADD_ENEMY and not game_over:
-            enemy = Enemy()
+            enemy = Enemy(enemy_base_speed)
             all_sprites.add(enemy)
             enemies.add(enemy)
 
-        # Spawn coins regularly
+        # Add coin
         if event.type == ADD_COIN and not game_over:
             coin = Coin()
             all_sprites.add(coin)
             coins.add(coin)
 
-        # Restart game after game over
+        # Restart after game over
         if event.type == pygame.KEYDOWN and game_over:
             if event.key == pygame.K_r:
-                # Reset everything
                 all_sprites.empty()
                 enemies.empty()
                 coins.empty()
@@ -249,37 +300,66 @@ while True:
 
                 score = 0
                 coin_count = 0
+                coin_weight_sum = 0
                 game_over = False
+                speed_level = 0
+                enemy_base_speed = 5
 
+    # Update game objects
     if not game_over:
-        # Update all sprites
         all_sprites.update()
 
-        # Increase score over time
+        # Increase survival score
         score += 1
 
-        # Check collision with enemy cars
+        # Collision with enemy = game over
         if pygame.sprite.spritecollideany(player, enemies):
             game_over = True
 
-        # Check collision with coins
-        collected = pygame.sprite.spritecollide(player, coins, True)
-        if collected:
-            coin_count += len(collected)
+        # Collision with coins
+        collected_coins = pygame.sprite.spritecollide(player, coins, True)
 
-    # Draw everything
+        if collected_coins:
+            # Increase number of collected coins
+            coin_count += len(collected_coins)
+
+            # Add total value of collected coins
+            for coin in collected_coins:
+                coin_weight_sum += coin.value
+
+            # Increase speed level every N coins
+            new_speed_level = coin_count // COINS_NEEDED_FOR_SPEED_UP
+
+            # Make speed level grow faster
+            if new_speed_level > speed_level:
+                speed_level = new_speed_level
+                enemy_base_speed += 2
+
+                # Increase speed of enemies already on screen too
+                for enemy in enemies:
+                    enemy.speed += 2
+
+    # Draw scene
     draw_road()
     all_sprites.draw(screen)
 
-    # Show score in top left
+    # Top left: score
     draw_text(screen, f"Score: {score}", font_small, WHITE, 10, 10)
 
-    # Show collected coins in top right
-    coin_text = font_small.render(f"Coins: {coin_count}", True, YELLOW)
-    coin_rect = coin_text.get_rect(topright=(WIDTH - 10, 10))
-    screen.blit(coin_text, coin_rect)
+    # Top left below score: speed level
+    draw_text(screen, f"Speed Lv: {speed_level}", font_small, WHITE, 10, 40)
 
-    # Game over screen
+    # Top right: collected coins
+    coin_count_surface = font_small.render(f"Coins: {coin_count}", True, YELLOW)
+    coin_count_rect = coin_count_surface.get_rect(topright=(WIDTH - 10, 10))
+    screen.blit(coin_count_surface, coin_count_rect)
+
+    # Top right below: total value/weight
+    value_surface = font_small.render(f"Value: {coin_weight_sum}", True, WHITE)
+    value_rect = value_surface.get_rect(topright=(WIDTH - 10, 40))
+    screen.blit(value_surface, value_rect)
+
+    # Game over text
     if game_over:
         game_over_text = font_big.render("GAME OVER", True, WHITE)
         restart_text = font_small.render("Press R to Restart", True, WHITE)
